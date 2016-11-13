@@ -24,15 +24,11 @@ class DoSbtCache(scalaVersion: Seq[String], rootTask: RootTask) extends Persiste
 
   val log = LoggerFactory getLogger ("do-sbt-cache")
 
-  def exec(cmd: String) = {
-    val errBuff = new StringBuffer()
-    val outBuff = new StringBuffer()
-    val out = ProcessLogger(e => outBuff.append(e + "\n"), e => errBuff.append(e + "\n"))
-    val result = if(asWin)
-      Process(Seq("cmd.exe", "/c", cmd)) lineStream_! out
+  def exec(cmd: String): String = {
+    if(asWin)
+      Process(Seq("cmd.exe", "/c", cmd)) !!
     else
-      Process(Seq("bash", "-c", cmd)) lineStream_! out
-    outBuff -> errBuff
+      Process(Seq("bash", "-c", cmd)) !!
   }
 
   var cacheStatus = Map[LibResult, Option[Seq[String]]]()
@@ -54,11 +50,8 @@ class DoSbtCache(scalaVersion: Seq[String], rootTask: RootTask) extends Persiste
       } yield
         s""" sbt '++$version' 'set set libraryDependencies+=$lib' 'update' """
       cmds.foreach(cmd => {
-        val (outBuff , errBuff) = exec(cmd)
-
-        log.info(outBuff.toString)
-
-        log.error(errBuff.toString)
+        val out = exec(cmd)
+        log.info(out)
 
       })
       log.info(s"cache finish :${result.get.list}")
