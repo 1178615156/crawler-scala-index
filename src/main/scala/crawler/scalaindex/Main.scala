@@ -44,7 +44,7 @@ class DoSbtCache(scalaVersion: Seq[String], rootTask: RootTask) extends Persiste
   override def receiveCommand: Receive = {
     case x@ScalaIndexCrawler.LibResult(query, result) => persist(x) { x =>
       mark(x)
-
+      log.info(s"try to cache $result")
       val cmds = for {
         version <- scalaVersion
         lib <- result.get.list
