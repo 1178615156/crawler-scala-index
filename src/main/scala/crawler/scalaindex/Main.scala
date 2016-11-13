@@ -15,6 +15,7 @@ import play.api.libs.ws.ahc.AhcWSClient
 import scala.concurrent.duration._
 import scala.collection.JavaConversions._
 import scala.sys.process.{Process, ProcessLogger}
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by yujieshui on 2016/11/13.
@@ -24,11 +25,13 @@ class DoSbtCache(scalaVersion: Seq[String], rootTask: RootTask) extends Persiste
 
   val log = LoggerFactory getLogger ("do-sbt-cache")
 
-  def exec(cmd: String): String = {
-    if(asWin)
-      Process(Seq("cmd.exe", "/c", cmd)) !!
-    else
-      Process(Seq("bash", "-c", cmd)) !!
+  def exec(cmd: String): Try[String] = {
+    Try {
+      if(asWin)
+        Process(Seq("cmd.exe", "/c", cmd)) !!
+      else
+        Process(Seq("bash", "-c", cmd)) !!
+    }
   }
 
   var cacheStatus = Map[LibResult, Option[Seq[String]]]()
@@ -51,7 +54,10 @@ class DoSbtCache(scalaVersion: Seq[String], rootTask: RootTask) extends Persiste
         s""" sbt '++$version' 'set libraryDependencies+=$lib' 'update' """
       cmds.foreach(cmd => {
         val out = exec(cmd)
-        log.info(out)
+        out match {
+          case Success(x) => log.info(x)
+          case Failure(x) => log.error(x.toString)
+        }
 
       })
       log.info(s"cache finish :${result.get.list}")
