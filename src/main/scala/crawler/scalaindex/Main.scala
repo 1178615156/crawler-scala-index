@@ -42,6 +42,7 @@ import crawler.scalaindex.DoSbtCache._
 class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask) extends PersistentActor {
 
   val log         = LoggerFactory getLogger "do-sbt-cache"
+  val sbtLog      = LoggerFactory getLogger "sbt-log"
   var cacheStatus = Map[DoCache, DoCacheResult]()
 
   override def receiveRecover: Receive = {
@@ -58,7 +59,7 @@ class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask) extends Pers
       mark(x)
       Try {
         log.info(s"try to cache $x")
-        exec(cacheCmd(x)).foreach(log.info(_))
+        exec(cacheCmd(x)).foreach(  sbtLog.info(_))
       } match {
         case Success(e) => log.info(s"cache success $x")
         case Failure(e) => log.error(s"cache failure $x ::$e")
