@@ -106,33 +106,4 @@ ScalaIndexCrawler(val rootTask: RootTask,
   def finish(query: crawlerLib.Query) = libStatus.get(query).exists(_.result.nonEmpty)
 }
 
-//
-//object Main {
-//  def config = ConfigFactory load "application.conf"
-//
-//  implicit lazy val actorSystem        = ActorSystem("scalaIndexCrawler", config)
-//  implicit lazy val materializer       = ActorMaterializer()
-//  implicit lazy val wsClient: WSClient = AhcWSClient()
-//  implicit lazy val environment        = new ScalaIndexCrawlerEnvironment {}
-//
-//  def main(args: Array[String]): Unit = {
-//    val scalaIndexCrawlerPage = new CrawlerPage(wsClient)
-//
-//  }
-//
-//}
-//
-//
-//
-//
-//
-//
-
-
-
-
-
-
-
-
 
