@@ -21,7 +21,7 @@ class ScalaIndexCrawlerTest extends WordSpecLike with TestResources {
     lazy val testKit = new TestKit(ActorSystem("test")) with ImplicitSender
     import testKit._
     lazy val scalaIndexCrawler = system.actorOf(Props(new ScalaIndexCrawler(
-      rootTask, crawlerPage, crawlerLib
+      rootTask, crawlerPage, crawlerLib,testActor
     )))
     "send doRun" in {
 
@@ -43,7 +43,7 @@ class ScalaIndexCrawlerTest extends WordSpecLike with TestResources {
     lazy val testKit = new TestKit(ActorSystem("test")) with ImplicitSender
     import testKit._
     lazy val scalaIndexCrawler = system.actorOf(Props(new ScalaIndexCrawler(
-      rootTask, crawlerPage, crawlerLib
+      rootTask, crawlerPage, crawlerLib,testActor
     )))
 
     "get result" in {

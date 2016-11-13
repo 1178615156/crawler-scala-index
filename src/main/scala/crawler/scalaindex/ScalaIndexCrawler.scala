@@ -1,13 +1,9 @@
 package crawler.scalaindex
 
-import akka.actor.ActorSystem
+import akka.actor.ActorRef
 import akka.pattern._
 import akka.persistence.{PersistentActor, RecoveryCompleted}
-import akka.stream.ActorMaterializer
-import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
-import play.api.libs.ws.WSClient
-import play.api.libs.ws.ahc.AhcWSClient
 
 object ScalaIndexCrawler {
 
@@ -36,7 +32,8 @@ import crawler.scalaindex.ScalaIndexCrawler._
 final class
 ScalaIndexCrawler(val rootTask: RootTask,
                   val crawlerPage: CrawlerPage,
-                  val crawlerLib: CrawlerLib
+                  val crawlerLib: CrawlerLib,
+                  val pipeActor : ActorRef
                  )(implicit val environment: ScalaIndexCrawlerEnvironment)
   extends PersistentActor {
   val log = LoggerFactory getLogger "scala-index-crawler"
@@ -74,11 +71,12 @@ ScalaIndexCrawler(val rootTask: RootTask,
     case query: CrawlerLib.Query if !finish(query) => persist(query) { query =>
       log.info(s"receive lib query : $query")
       markLib(query)
-      crawlerLib.crawler(query).map(e => LibResult(query, Some(e))) pipeTo self
+      crawlerLib.crawler(query).map(e => LibResult(query, Some(e))).pipeTo(self)
     }
     case x@LibResult(query, Some(result))          => persist(x) { x =>
       log.info(s"receive lib result:  $result")
       updateLibStatus(x)
+      pipeActor ! x
     }
 
 
