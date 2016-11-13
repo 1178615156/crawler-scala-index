@@ -48,7 +48,7 @@ class DoSbtCache(scalaVersion: Seq[String], rootTask: RootTask) extends Persiste
         version <- scalaVersion
         lib <- result.get.list
       } yield
-        s""" sbt '++$version' 'set set libraryDependencies+=$lib' 'update' """
+        s""" sbt '++$version' 'set libraryDependencies+=$lib' 'update' """
       cmds.foreach(cmd => {
         val out = exec(cmd)
         log.info(out)
