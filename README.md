@@ -9,3 +9,10 @@
 在也不用担心sha1不一致了
 当然在爬取请求的时候应该使用使用原生 sbt
  3. 可以一定程度的并行爬去更新..-> todo 
+ 
+ 
+ 
+### 使用
+git clone https://github.com/1178615156/crawler-scala-index
+cd crawler-scala-index
+sh start.sh 
