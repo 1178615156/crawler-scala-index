@@ -96,7 +96,7 @@ object Main {
   implicit      val timeout            = Timeout(10.second)
 
   def main(args: Array[String]): Unit = {
-    val rootTask: RootTask = RootTask(Some("targets:scala_2.11"), Some("stars"), Some(1), Some(1))
+    val rootTask: RootTask = RootTask(Some("targets:scala_2.11"), Some("stars"), Some(1), Some(10))
     val crawlerPage: CrawlerPage = new CrawlerPage(wsClient)
     val crawlerLib: CrawlerLib = new CrawlerLib(wsClient)
     val doSbtCache = actorSystem.actorOf(Props(new DoSbtCache(
