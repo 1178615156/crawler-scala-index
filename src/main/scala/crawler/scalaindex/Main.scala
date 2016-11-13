@@ -1,71 +1,86 @@
 package crawler.scalaindex
 
-import java.io.{BufferedReader, InputStreamReader}
-
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorSystem, Props}
 import akka.persistence.{PersistentActor, RecoveryCompleted}
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-import crawler.scalaindex.ScalaIndexCrawler.{DoRun, LibResult, RootTask}
+import crawler.scalaindex.DoSbtCache.DoCache
+import crawler.scalaindex.ScalaIndexCrawler.{DoRun, RootTask}
 import org.slf4j.LoggerFactory
 import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
 
 import scala.concurrent.duration._
-import scala.collection.JavaConversions._
-import scala.sys.process.{Process, ProcessLogger}
+import scala.sys.process.Process
 import scala.util.{Failure, Success, Try}
 
 /**
   * Created by yujieshui on 2016/11/13.
   */
-class DoSbtCache(scalaVersion: Seq[String], rootTask: RootTask) extends PersistentActor {
-  def asWin = System.getProperty("os.name").toLowerCase.startsWith("win")
+object DoSbtCache {
 
-  val log = LoggerFactory getLogger ("do-sbt-cache")
+  case class DoCache(scalaVersion: String, lib: String)
 
-  def exec(cmd: String) = {
-    if(asWin)
-      Process(Seq("cmd.exe", "/c", cmd)) lineStream
-    else
-      Process(Seq("bash", "-c", cmd)) lineStream
+  case class DoCacheResult(doCache: DoCache, result: Option[String])
+
+  def cacheCmd(doCache: DoCache) = {
+    s""" sbt '++${doCache.scalaVersion}' 'set libraryDependencies+=${doCache.lib}' 'update' """
   }
 
-  var cacheStatus = Map[LibResult, Option[Seq[String]]]()
+  def exec(cmd: String) = {
+    def asWin = System.getProperty("os.name").toLowerCase.startsWith("win")
+    if(asWin)
+      Process(Seq("cmd.exe", "/c", cmd)).lineStream
+    else
+      Process(Seq("bash", "-c", cmd)).lineStream
+  }
+}
+
+import crawler.scalaindex.DoSbtCache._
+
+class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask) extends PersistentActor {
+
+  val log         = LoggerFactory getLogger "do-sbt-cache"
+  var cacheStatus = Map[DoCache, DoCacheResult]()
 
   override def receiveRecover: Receive = {
-    case x@ScalaIndexCrawler.LibResult(query, result) =>
+    case x@DoCache(scalaVersion, lib) =>
       mark(x)
-    case RecoveryCompleted                            =>
-      cacheStatus.collect { case (key, None) => key } foreach (self ! _)
+    case x: DoCacheResult             =>
+      cacheStatus += x.doCache -> x
+    case RecoveryCompleted            =>
+      cacheStatus.values.collect { case DoCacheResult(doCache, None) => self ! doCache }
   }
 
   override def receiveCommand: Receive = {
-    case x@ScalaIndexCrawler.LibResult(query, result) => persist(x) { x =>
+    case x@DoCache(scalaVersion, lib)                 => persist(x) { x =>
       mark(x)
-      log.info(s"try to cache $result")
-      val cmds = for {
-        version <- scalaVersion
+      Try {
+        log.info(s"try to cache $x")
+        exec(cacheCmd(x)).foreach(log.info(_))
+      } match {
+        case Success(e) => log.info(s"cache success $x")
+        case Failure(e) => log.error(s"cache failure $x ::$e")
+      }
+      self ! DoCacheResult(x, Some(cacheCmd(x)))
+    }
+    case x: DoCacheResult                             =>
+      cacheStatus += x.doCache -> x
+    case x@ScalaIndexCrawler.LibResult(query, result) => persist(x) { x =>
+      log.info(s"receive: $result")
+      val waitDoCache = for {
+        version <- scalaVersionList
         lib <- result.get.list
       } yield
-        s""" sbt '++$version' 'set libraryDependencies+=$lib' 'update' """
-      cmds.foreach(cmd => {
-        Try {
-          val out = exec(cmd)
-          out.foreach(log.info(_))
-        } match {
-          case Success(x) => log.info(s"cache success : $cmd")
-          case Failure(x) => log.error(x.toString)
-        }
-      })
-      log.info(s"cache finish :${result.get.list}")
-      cacheStatus += x -> Some(cmds)
+        DoCache(version, lib)
+      waitDoCache foreach (self ! _)
     }
 
   }
 
-  def mark(x: LibResult) = cacheStatus += x -> None
+
+  def mark(x: DoCache) = cacheStatus += x -> DoCacheResult(x, None)
 
   override def persistenceId: String = s"do-sbt-cache-$rootTask"
 }
