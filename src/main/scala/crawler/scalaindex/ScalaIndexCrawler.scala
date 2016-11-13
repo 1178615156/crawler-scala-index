@@ -33,7 +33,7 @@ final class
 ScalaIndexCrawler(val rootTask: RootTask,
                   val crawlerPage: CrawlerPage,
                   val crawlerLib: CrawlerLib,
-                  val pipeActor : ActorRef
+                  val pipeActor: ActorRef
                  )(implicit val environment: ScalaIndexCrawlerEnvironment)
   extends PersistentActor {
   val log = LoggerFactory getLogger "scala-index-crawler"
@@ -59,9 +59,8 @@ ScalaIndexCrawler(val rootTask: RootTask,
     case query: CrawlerPage.Query if !finish(query) => persist(query) { query =>
       log.info(s"receive page query : $query")
       markPage(query)
-
-      crawlerPage.crawler(query) map (e => PageResult(query, Some(e))) pipeTo self
     }
+      crawlerPage.crawler(query) map (e => PageResult(query, Some(e))) pipeTo self
     case x@PageResult(query, Some(result))          => persist(x) { x =>
       log.info(s"receive page result:  $result")
       updatePageStatus(x)
@@ -71,8 +70,8 @@ ScalaIndexCrawler(val rootTask: RootTask,
     case query: CrawlerLib.Query if !finish(query) => persist(query) { query =>
       log.info(s"receive lib query : $query")
       markLib(query)
-      crawlerLib.crawler(query).map(e => LibResult(query, Some(e))).pipeTo(self)
     }
+      crawlerLib.crawler(query).map(e => LibResult(query, Some(e))).pipeTo(self)
     case x@LibResult(query, Some(result))          => persist(x) { x =>
       log.info(s"receive lib result:  $result")
       updateLibStatus(x)
