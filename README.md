@@ -12,6 +12,9 @@
  
  
 ### 使用
+
+```
 git clone https://github.com/1178615156/crawler-scala-index
 cd crawler-scala-index
 sh start.sh 
+```
