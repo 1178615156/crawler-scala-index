@@ -24,16 +24,16 @@ class CrawlerLib(wSClient: WSClient)(implicit environment: ScalaIndexCrawlerEnvi
   import environment._
 
   type Query = CrawlerLib.Query
-  type SourcesResult = String
-  type ParseResult = CrawlerLib.Result
+  type Sources = String
+  type Parse = CrawlerLib.Result
 
-  override def sources(query: Query): Future[SourcesResult] = {
+  override def sources(query: Query): Future[Sources] = {
     wSClient.url(s"$index_scala_host/${query.string}")
       .get()
       .map(_.body)
   }
 
-  override def parse(sources: SourcesResult): Future[ParseResult] = {
+  override def parse(sources: Sources): Future[Parse] = {
     val lib = Jsoup
       .parse(sources)
       .select("#sbt > pre")

@@ -21,10 +21,10 @@ class CrawlerPage(wSClient: WSClient)(implicit environment: ScalaIndexCrawlerEnv
   import environment._
 
   override type Query = CrawlerPage.Query
-  override type SourcesResult = String
-  override type ParseResult =CrawlerPage.Result
+  override type Sources = String
+  override type Parse =CrawlerPage.Result
 
-  override def sources(query: Query): Future[SourcesResult] = {
+  override def sources(query: Query): Future[Sources] = {
     val queryString = List(
       query.q.map(_.toString).map("q" -> _),
       query.page.map(_.toString).map("page" -> _),
@@ -38,7 +38,7 @@ class CrawlerPage(wSClient: WSClient)(implicit environment: ScalaIndexCrawlerEnv
   }
 
 
-  def parse(sources: SourcesResult): Future[ParseResult] = {
+  def parse(sources: Sources): Future[Parse] = {
     val list = Jsoup.parse(sources).select(
       "#container-search > div > div:nth-child(2) > div > div"
     ).first().children().toList
