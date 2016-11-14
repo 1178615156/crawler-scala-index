@@ -59,7 +59,7 @@ class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask) extends Pers
       mark(x)
       Try {
         log.info(s"try to cache $x")
-        exec(cacheCmd(x)).foreach(  sbtLog.info(_))
+        exec(cacheCmd(x)).foreach(sbtLog.info(_))
       } match {
         case Success(e) => log.info(s"cache success $x")
         case Failure(e) => log.error(s"cache failure $x ::$e")
@@ -86,21 +86,26 @@ class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask) extends Pers
   override def persistenceId: String = s"do-sbt-cache-$rootTask"
 }
 
-object Main {
-  def config = ConfigFactory load()
 
-  implicit lazy val actorSystem        = ActorSystem("scalaIndexCrawler", config)
+object Main {
+
+  implicit lazy val actorSystem        = ActorSystem("scalaIndexCrawler")
   implicit lazy val materializer       = ActorMaterializer()
   implicit lazy val wsClient: WSClient = AhcWSClient()
   implicit lazy val environment        = new ScalaIndexCrawlerEnvironment {}
   implicit      val timeout            = Timeout(10.second)
 
   def main(args: Array[String]): Unit = {
-    val rootTask: RootTask = RootTask(Some("targets:scala_2.11"), Some("stars"), Some(1), Some(10))
+    val rootTask: RootTask = RootTask(
+      q = Some(CrawlerScalaIndexConfig.q),
+      sort = Some(CrawlerScalaIndexConfig.sort),
+      pageStart = Some(CrawlerScalaIndexConfig.pageStart),
+      pageEnd = Some(CrawlerScalaIndexConfig.pageEnd)
+    )
     val crawlerPage: CrawlerPage = new CrawlerPage(wsClient)
     val crawlerLib: CrawlerLib = new CrawlerLib(wsClient)
     val doSbtCache = actorSystem.actorOf(Props(new DoSbtCache(
-      Seq("2.11.8", "2.12.0"), rootTask
+      CrawlerScalaIndexConfig.scalaVersion, rootTask
     )))
     lazy val scalaIndexCrawler = actorSystem.actorOf(Props(new ScalaIndexCrawler(
       rootTask, crawlerPage, crawlerLib, doSbtCache
