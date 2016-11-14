@@ -9,10 +9,7 @@
 在也不用担心sha1不一致了
 当然在爬取请求的时候应该使用使用原生 sbt
  
- 
- 
 ### 使用
-
 ```
 git clone https://github.com/1178615156/crawler-scala-index
 cd crawler-scala-index
@@ -20,15 +17,13 @@ sh start.sh
 ```
 
 ### config 
-修改改文件进行配置 
+[config 保存在这里](src/main/scala/crawler/scalaindex/CrawlerScalaIndexConfig.scala)
 
-[1](src/main/scala/crawler/scalaindex/CrawlerScalaIndexConfig.scala)
+```
+ scalaVersion = Seq("2.11.8", "2.12.0") //需要请求缓存的scala version
+ q            = "targets:scala_2.11"    //查询条件
+ sort         = "starts"                //排序方式
+ pageStart    = 1                       //启示页
+ pageEnd      = 20                      //终止页
+```
 
-默认值
-```
- scalaVersion = Seq("2.11.8", "2.12.0")
- q            = "targets:scala_2.11"
- sort         = "starts"
- pageStart    = 1
- pageEnd      = 20
-```
