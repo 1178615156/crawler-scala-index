@@ -18,3 +18,17 @@ git clone https://github.com/1178615156/crawler-scala-index
 cd crawler-scala-index
 sh start.sh 
 ```
+
+### config 
+修改改文件进行配置 
+
+[1](src/main/scala/crawler/scalaindex/CrawlerScalaIndexConfig.scala)
+
+默认值
+```
+ scalaVersion = Seq("2.11.8", "2.12.0")
+ q            = "targets:scala_2.11"
+ sort         = "starts"
+ pageStart    = 1
+ pageEnd      = 20
+```
