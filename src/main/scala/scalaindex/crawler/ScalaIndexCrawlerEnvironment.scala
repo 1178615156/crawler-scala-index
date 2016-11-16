@@ -1,4 +1,4 @@
-package crawler.scalaindex
+package scalaindex.crawler
 
 /**
   * Created by yujieshui on 2016/11/13.

@@ -1,4 +1,4 @@
-package crawler.scalaindex
+package scalaindex.crawler
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer

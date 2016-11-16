@@ -1,9 +1,9 @@
-package crawler.scalaindex
+package scalaindex.crawler
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import akka.util.Timeout
-import crawler.scalaindex.ScalaIndexCrawler._
+import ScalaIndexCrawler._
 import org.scalatest.{FunSuite, WordSpecLike}
 import akka.pattern._
 import scala.concurrent.duration._

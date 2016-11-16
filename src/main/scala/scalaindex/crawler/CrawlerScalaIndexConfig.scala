@@ -1,4 +1,4 @@
-package crawler.scalaindex
+package scalaindex.crawler
 
 import com.typesafe.config.ConfigFactory
 

@@ -1,4 +1,4 @@
-package crawler.scalaindex
+package scalaindex.crawler
 
 import akka.actor.ActorRef
 import akka.pattern._
@@ -27,7 +27,7 @@ object ScalaIndexCrawler {
 
 }
 
-import crawler.scalaindex.ScalaIndexCrawler._
+import ScalaIndexCrawler._
 
 final class
 ScalaIndexCrawler(val rootTask: RootTask,
