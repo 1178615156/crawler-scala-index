@@ -1,6 +1,5 @@
 package scalaindex.crawler
 
-import crawler.Crawler
 import org.jsoup.Jsoup
 import play.api.libs.ws.WSClient
 

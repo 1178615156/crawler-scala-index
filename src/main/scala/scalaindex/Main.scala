@@ -1,12 +1,9 @@
-package scalaindex.crawler
+package scalaindex
 
 import akka.actor.{ActorSystem, Props}
 import akka.persistence.{PersistentActor, RecoveryCompleted}
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import com.typesafe.config.ConfigFactory
-import DoSbtCache.DoCache
-import ScalaIndexCrawler.{DoRun, RootTask}
 import org.slf4j.LoggerFactory
 import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
@@ -14,6 +11,9 @@ import play.api.libs.ws.ahc.AhcWSClient
 import scala.concurrent.duration._
 import scala.sys.process.Process
 import scala.util.{Failure, Success, Try}
+import scalaindex.DoSbtCache.DoCache
+import scalaindex.crawler.ScalaIndexCrawler.{DoRun, RootTask}
+import scalaindex.crawler._
 
 /**
   * Created by yujieshui on 2016/11/13.
@@ -37,7 +37,7 @@ object DoSbtCache {
   }
 }
 
-import DoSbtCache._
+import scalaindex.DoSbtCache._
 
 class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask) extends PersistentActor {
 

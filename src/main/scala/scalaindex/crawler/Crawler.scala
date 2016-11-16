@@ -1,7 +1,7 @@
-package crawler
+package scalaindex.crawler
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * Created by yujieshui on 2016/11/13.
