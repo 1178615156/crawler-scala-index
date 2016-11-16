@@ -1,5 +1,6 @@
 package scalaindex
 
+
 import akka.actor.{ActorSystem, Props}
 import akka.persistence.{PersistentActor, RecoveryCompleted}
 import akka.stream.ActorMaterializer
@@ -9,6 +10,7 @@ import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
 
 import scala.concurrent.duration._
+import scala.reflect.ClassTag
 import scala.sys.process.Process
 import scala.util.{Failure, Success, Try}
 import scalaindex.DoSbtCache.DoCache
@@ -18,6 +20,39 @@ import scalaindex.crawler._
 /**
   * Created by yujieshui on 2016/11/13.
   */
+trait TaskPersistent[Task,TaskResult] {
+  self: PersistentActor =>
+  var taskMap: Map[Task, Option[TaskResult]] = Map()
+
+  def runTask(task: Task): Unit
+
+  def runResult(result: TaskResult): Unit
+
+  def markResult(result: TaskResult): Unit
+
+  def markTask(task: Task): Unit = taskMap += task -> None
+
+  def redoTask(task: Task) = runTask(task)
+
+  def taskCommand(implicit TaskClass: ClassTag[Task], TaskResultClass: ClassTag[TaskResult]): Receive = {
+    case TaskClass(task)         => persist(task) { task =>
+      markTask(task)
+      runTask(task)
+    }
+    case TaskResultClass(result) => persist(result) { result =>
+      runResult(result)
+      markResult(result)
+    }
+  }
+
+  def taskRecover(implicit TaskClass: ClassTag[Task], TaskResultClass: ClassTag[TaskResult]): Receive = {
+    case TaskClass(task)         => markTask(task)
+    case TaskResultClass(result) => markResult(result)
+    case RecoveryCompleted       =>
+      taskMap.collect { case (key, None) => key }.foreach(redoTask)
+  }
+}
+
 object DoSbtCache {
 
   case class DoCache(scalaVersion: String, lib: String)

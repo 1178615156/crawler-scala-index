@@ -5,6 +5,7 @@ import akka.pattern._
 import akka.persistence.{PersistentActor, RecoveryCompleted}
 import org.slf4j.LoggerFactory
 
+
 object ScalaIndexCrawler {
 
   case class RootTask(q: Option[String],
