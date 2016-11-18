@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-pkill -f crawler.scalaindex.Main
+pkill -f scalaindex.Main
