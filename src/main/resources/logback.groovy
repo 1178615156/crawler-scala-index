@@ -46,7 +46,7 @@ def mkLogger(Conf conf) {
     logger(conf.name, conf.level, [conf.name])
 }
 
-mkLogger(new Conf(name: "do-sbt-cache"))
+mkLogger(new Conf(name: "do-sbt-cache",level: DEBUG))
 mkLogger(new Conf(name: "sbt-log",level: DEBUG))
 mkLogger(new Conf(name: "crawler", level: DEBUG))
 
