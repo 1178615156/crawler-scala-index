@@ -9,12 +9,14 @@ import org.slf4j.LoggerFactory
 import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.sys.process.Process
 import scala.util.{Failure, Success, Try}
 import scalaindex.DoSbtCache.Task
 import scalaindex.crawler.ScalaIndexCrawler.{DoRun, RootTask}
 import scalaindex.crawler._
+import akka.pattern._
 
 object DoSbtCache {
 
@@ -43,6 +45,8 @@ class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask)
 
   val log    = LoggerFactory getLogger "do-sbt-cache"
   val sbtLog = LoggerFactory getLogger "sbt-log"
+  implicit val executionContext =
+    scala.concurrent.ExecutionContext.fromExecutor(java.util.concurrent.Executors.newFixedThreadPool(1))
 
   override def receiveRecover: Receive = taskRecover
 
@@ -59,14 +63,17 @@ class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask)
   override def persistenceId: String = s"do-sbt-cache-$rootTask"
 
   override def runTask(task: Task): Unit = if(!finishTask(task)) {
-    Try {
-      log.info(s"try to cache $task")
-      exec(cacheCmd(task)).foreach(sbtLog.info(_))
-    } match {
-      case Success(e) => log.info(s"cache success $task")
-      case Failure(e) => log.error(s"cache failure $task ::$e")
+    val future = Future {
+      Try {
+        log.info(s"try to cache $task")
+        exec(cacheCmd(task)).foreach(sbtLog.info(_))
+      } match {
+        case Success(e) => log.info(s"cache success $task")
+        case Failure(e) => log.error(s"cache failure $task ::$e")
+      }
+      TaskResult(task, cacheCmd(task))
     }
-    self ! TaskResult(task, cacheCmd(task))
+    future pipeTo self
   }
 
   override def runResult(result: TaskResult): Unit = ()
