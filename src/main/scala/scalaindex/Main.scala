@@ -30,11 +30,10 @@ object DoSbtCache {
 
   def cacheCmd(doCache: Task) = {
     new File("/tmp/sbt-cache").mkdir()
-    require(doCache.lib.split("\n").size == 1)
     val sv = s"++${doCache.scalaVersion}"
-    val lib = s"(${doCache.lib})${if(withSources) ".withSources()" else ""}${if(withJavadoc) ".withJavadoc()" else ""}"
+//    val lib = s"(${doCache.lib}${if(withSources) ".withSources()" else ""}${if(withJavadoc) ".withJavadoc()" else ""})"
     "cd /tmp/sbt-cache && " +
-      s""" sbt '$sv' 'set libraryDependencies+=$lib' 'update' """
+      s""" sbt '$sv' 'set libraryDependencies+=${doCache.lib}' 'update' """
   }
 
   def exec(cmd: String) = {
@@ -55,7 +54,7 @@ class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask)
   val log              = LoggerFactory getLogger "do-sbt-cache"
   val sbtLog           = LoggerFactory getLogger "sbt-log"
   val executionContext =
-    scala.concurrent.ExecutionContext.fromExecutor(java.util.concurrent.Executors.newFixedThreadPool(10))
+    scala.concurrent.ExecutionContext.fromExecutor(java.util.concurrent.Executors.newFixedThreadPool(1))
 
   override def receiveRecover: Receive = taskRecover
 

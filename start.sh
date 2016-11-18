@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 git pull
-sbt pack
+sbt clean pack
 chmod 777 ./target/pack/bin/main
 
 sh stop.sh
