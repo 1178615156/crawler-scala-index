@@ -1,6 +1,8 @@
 package scalaindex
 
 
+import java.io.File
+
 import akka.actor.{ActorSystem, Props}
 import akka.persistence.PersistentActor
 import akka.stream.ActorMaterializer
@@ -25,6 +27,8 @@ object DoSbtCache {
   case class TaskResult(task: Task, result: String)
 
   def cacheCmd(doCache: Task) = {
+    new File("/tmp/sbt-cache").mkdir()
+    "cd /tmp/sbt-cache && " +
     s""" sbt '++${doCache.scalaVersion}' 'set libraryDependencies+=(${doCache.lib}).withSources().withJavadoc()' 'update' """
   }
 
