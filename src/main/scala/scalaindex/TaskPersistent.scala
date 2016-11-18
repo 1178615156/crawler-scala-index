@@ -16,6 +16,7 @@ trait TaskPersistent[Task, TaskResult] {
   def log: Logger
 
   var taskMap: Map[Task, Option[TaskResult]] = Map()
+  private var doingTask = Set[Task]()
 
   def runTask(task: Task): Unit
 
@@ -28,10 +29,13 @@ trait TaskPersistent[Task, TaskResult] {
   def markTask(task: Task): Unit = taskMap += task -> None
 
   def isFinish(task: Task) = taskMap.get(task).exists(_.nonEmpty)
-  def isDoing (task: Task) = taskMap.get(task).exists(_.isEmpty)
+
+  def isDoing(task: Task) = doingTask.contains(task)
+
   def redoTask(task: Task) = {
     log.info(s"redo task $task")
     runTask(task)
+    doingTask += task
   }
 
 
@@ -40,6 +44,7 @@ trait TaskPersistent[Task, TaskResult] {
       log.debug(s"receive task :$task")
       markTask(task)
       runTask(task)
+      doingTask += task
     }
     case TaskResultClass(result) => persist(result) { result =>
       log.debug(s"receive result:$result")

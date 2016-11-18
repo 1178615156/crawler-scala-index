@@ -80,9 +80,8 @@ class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask)
         case Success(e) => log.info(s"cache success $task")
         case Failure(e) => log.error(s"cache failure $task ::$e")
       }
-      TaskResult(task, cacheCmd(task))
+      self ! TaskResult(task, cacheCmd(task))
     }(executionContext)
-    pipe(future)(context.dispatcher) pipeTo self
   }
 
   override def runResult(result: TaskResult): Unit = ()
