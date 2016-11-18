@@ -25,7 +25,7 @@ object DoSbtCache {
   case class TaskResult(task: Task, result: String)
 
   def cacheCmd(doCache: Task) = {
-    s""" sbt '++${doCache.scalaVersion}' 'set libraryDependencies+=${doCache.lib}' 'update' """
+    s""" sbt '++${doCache.scalaVersion}' 'set libraryDependencies+=(${doCache.lib}).withSources().withJavadoc()' 'update' """
   }
 
   def exec(cmd: String) = {
