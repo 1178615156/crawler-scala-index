@@ -3,8 +3,6 @@ package scalaindex.crawler
 import org.jsoup.Jsoup
 import play.api.libs.ws.WSClient
 
-import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
 import scala.concurrent.Future
 
 /**

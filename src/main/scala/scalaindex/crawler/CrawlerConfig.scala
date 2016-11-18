@@ -6,7 +6,7 @@ import scala.collection.JavaConversions._
 /**
   * Created by yujieshui on 2016/11/14.
   */
-object CrawlerScalaIndexConfig {
+object CrawlerConfig {
 
   def config = ConfigFactory load() getConfig "crawler.scalaindex.config"
 

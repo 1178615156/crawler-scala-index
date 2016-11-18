@@ -50,7 +50,7 @@ class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask)
 
   override def persistenceId: String = s"do-sbt-cache-$rootTask"
 
-  override def runTask(task: Task): Unit = {
+  override def runTask(task: Task): Unit = if(!finishTask(task)) {
     Try {
       log.info(s"try to cache $task")
       exec(cacheCmd(task)).foreach(sbtLog.info(_))
@@ -77,15 +77,15 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     val rootTask: RootTask = RootTask(
-      q = Some(CrawlerScalaIndexConfig.q),
-      sort = Some(CrawlerScalaIndexConfig.sort),
-      pageStart = Some(CrawlerScalaIndexConfig.pageStart),
-      pageEnd = Some(CrawlerScalaIndexConfig.pageEnd)
+      q = Some(CrawlerConfig.q),
+      sort = Some(CrawlerConfig.sort),
+      pageStart = Some(CrawlerConfig.pageStart),
+      pageEnd = Some(CrawlerConfig.pageEnd)
     )
     val crawlerPage: CrawlerPage = new CrawlerPage(wsClient)
     val crawlerLib: CrawlerLib = new CrawlerLib(wsClient)
     val doSbtCache = actorSystem.actorOf(Props(new DoSbtCache(
-      CrawlerScalaIndexConfig.scalaVersion, rootTask
+      CrawlerConfig.scalaVersion, rootTask
     )))
     lazy val scalaIndexCrawler = actorSystem.actorOf(Props(new ScalaIndexCrawler(
       rootTask, crawlerPage, crawlerLib, doSbtCache
