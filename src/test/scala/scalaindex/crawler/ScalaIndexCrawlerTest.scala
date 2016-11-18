@@ -24,40 +24,15 @@ class ScalaIndexCrawlerTest extends WordSpecLike with TestResources {
       rootTask, crawlerPage, crawlerLib,testActor
     )))
     "send doRun" in {
-
       val pages = (scalaIndexCrawler ask DoRun() await()).asInstanceOf[Seq[_]]
       assert(pages.size === 1)
     }
     "sleep" in {
       Thread.sleep(10000)
     }
-    "send getResult" in {
-      val x = scalaIndexCrawler.ask(GetResult()).await().asInstanceOf[Seq[_]]
-      println(x)
-    }
+
     "stop all" in {
       system.terminate().await()
-    }
-  }
-  "restart system" must {
-    lazy val testKit = new TestKit(ActorSystem("test")) with ImplicitSender
-    import testKit._
-    lazy val scalaIndexCrawler = system.actorOf(Props(new ScalaIndexCrawler(
-      rootTask, crawlerPage, crawlerLib,testActor
-    )))
-
-    "get result" in {
-      println(
-        scalaIndexCrawler.ask(GetResult()).await().asInstanceOf[Seq[_]].mkString("\n")
-      )
-    }
-    "sleep" in {
-      Thread.sleep(10000)
-    }
-    "get result 2 " in {
-      println(
-        scalaIndexCrawler.ask(GetResult()).await().asInstanceOf[Seq[_]].mkString("\n")
-      )
     }
   }
 }

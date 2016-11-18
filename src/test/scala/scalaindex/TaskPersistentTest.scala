@@ -9,6 +9,7 @@ import scala.concurrent.duration._
 import scalaindex.TestTaskPersistent.{GetResult, Task, TaskResult}
 import akka.pattern._
 import akka.util.Timeout
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -37,6 +38,7 @@ class TestTaskPersistent(override val persistenceId: String)
     case GetResult() => sender() ! taskMap.values.toList.collect { case Some(x) => x }
   }
 
+  override def log: Logger = LoggerFactory getLogger "test-parsistent"
 }
 
 object TestTaskPersistent {

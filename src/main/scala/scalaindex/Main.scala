@@ -46,7 +46,15 @@ class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask)
 
   override def receiveRecover: Receive = taskRecover
 
-  override def receiveCommand: Receive = taskCommand
+  override def receiveCommand: Receive = taskCommand orElse {
+    case CrawlerLib.Result(list) =>
+      val tasks = for {
+        sv <- scalaVersionList
+        lib <- list
+      } yield
+        Task(sv, lib)
+      tasks foreach (self ! _)
+  }
 
   override def persistenceId: String = s"do-sbt-cache-$rootTask"
 

@@ -30,15 +30,29 @@ ScalaIndexCrawler(val rootTask: RootTask,
                   val pipeActor: ActorRef
                  )(implicit val environment: ScalaIndexCrawlerEnvironment)
   extends Actor {
-  val log = LoggerFactory getLogger "scala-index-crawler"
+  val log = LoggerFactory getLogger "crawler"
 
   import context.dispatcher
 
   override def receive: Receive = {
-    case x: DoRun              => task2pageQuery(rootTask) foreach (self ! _)
-    case x: CrawlerPage.Query  => page.crawler(x) foreach (self ! _)
+    case x: DoRun =>
+      log.info("run")
+      task2pageQuery(rootTask) foreach (self ! _)
+
+    case x: CrawlerPage.Query =>
+      log.debug(s"page query: $x ")
+      page.crawler(x) foreach (self ! _)
+
     case x: CrawlerPage.Result =>
-      x.list.map(CrawlerLib.Query(_)).map(lib.crawler).foreach(_ pipeTo pipeActor)
+      log.debug(s"page result: $x ")
+      x.list map (CrawlerLib.Query(_)) foreach (self ! _)
+    case x: CrawlerLib.Query   =>
+      log.debug(s"lib query;$x")
+      lib.crawler(x) foreach (self ! _)
+
+    case x: CrawlerLib.Result =>
+      log.debug(s"lib result;$x")
+      pipeActor ! x
   }
 }
 
