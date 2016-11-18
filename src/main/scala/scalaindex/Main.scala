@@ -43,9 +43,9 @@ class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask)
   extends PersistentActor
     with TaskPersistent[DoSbtCache.Task, DoSbtCache.TaskResult] {
 
-  val log    = LoggerFactory getLogger "do-sbt-cache"
-  val sbtLog = LoggerFactory getLogger "sbt-log"
-  implicit val executionContext =
+  val log              = LoggerFactory getLogger "do-sbt-cache"
+  val sbtLog           = LoggerFactory getLogger "sbt-log"
+  val executionContext =
     scala.concurrent.ExecutionContext.fromExecutor(java.util.concurrent.Executors.newFixedThreadPool(1))
 
   override def receiveRecover: Receive = taskRecover
@@ -62,7 +62,7 @@ class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask)
 
   override def persistenceId: String = s"do-sbt-cache-$rootTask"
 
-  override def runTask(task: Task): Unit = if(!finishTask(task)) {
+  override def runTask(task: Task): Unit = if(!isFinish(task) && !isDoing(task)) {
     val future = Future {
       Try {
         log.info(s"try to cache $task")
@@ -72,8 +72,8 @@ class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask)
         case Failure(e) => log.error(s"cache failure $task ::$e")
       }
       TaskResult(task, cacheCmd(task))
-    }
-    future pipeTo self
+    }(executionContext)
+    pipe(future)(context.dispatcher) pipeTo self
   }
 
   override def runResult(result: TaskResult): Unit = ()

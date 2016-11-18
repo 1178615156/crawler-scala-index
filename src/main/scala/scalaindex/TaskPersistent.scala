@@ -27,8 +27,8 @@ trait TaskPersistent[Task, TaskResult] {
 
   def markTask(task: Task): Unit = taskMap += task -> None
 
-  def finishTask(task: Task) = taskMap.get(task).exists(_.nonEmpty)
-
+  def isFinish(task: Task) = taskMap.get(task).exists(_.nonEmpty)
+  def isDoing (task: Task) = taskMap.get(task).exists(_.isEmpty)
   def redoTask(task: Task) = {
     log.info(s"redo task $task")
     runTask(task)
