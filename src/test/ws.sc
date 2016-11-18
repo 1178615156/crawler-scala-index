@@ -1,6 +1,1 @@
-import scala.reflect.ClassTag
-
-val SC = implicitly[ClassTag[String]]
-"sss" match {
-  case SC(ss) => ss
-}
+val (l,r) =List(1,2,3,4,5,6).splitAt(0)

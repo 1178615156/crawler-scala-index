@@ -29,9 +29,7 @@ class TestTaskPersistent(override val persistenceId: String)
     println(result)
   }
 
-  override def markResult(result: TaskResult): Unit = {
-    taskMap += result.task -> Some(result)
-  }
+  override def result2task(result: TaskResult): Task = result.task
 
   override def receiveRecover: Receive = taskRecover
 
@@ -87,7 +85,7 @@ class TaskPersistentTest extends WordSpecLike {
     "wait infinish task to finish" in {
       Thread.sleep(2222)
       actor ask GetResult() pipeTo testActor
-      expectMsg(List(TaskResult(finishTask, "1"),TaskResult(unfinishTask, "2")))
+      expectMsg(List(TaskResult(finishTask, "1"), TaskResult(unfinishTask, "2")))
 
     }
   }

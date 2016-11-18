@@ -2,7 +2,7 @@ package scalaindex
 
 
 import akka.actor.{ActorSystem, Props}
-import akka.persistence.{PersistentActor, RecoveryCompleted}
+import akka.persistence.PersistentActor
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import org.slf4j.LoggerFactory
@@ -10,56 +10,19 @@ import play.api.libs.ws.WSClient
 import play.api.libs.ws.ahc.AhcWSClient
 
 import scala.concurrent.duration._
-import scala.reflect.ClassTag
 import scala.sys.process.Process
 import scala.util.{Failure, Success, Try}
-import scalaindex.DoSbtCache.DoCache
+import scalaindex.DoSbtCache.Task
 import scalaindex.crawler.ScalaIndexCrawler.{DoRun, RootTask}
 import scalaindex.crawler._
 
-/**
-  * Created by yujieshui on 2016/11/13.
-  */
-trait TaskPersistent[Task,TaskResult] {
-  self: PersistentActor =>
-  var taskMap: Map[Task, Option[TaskResult]] = Map()
-
-  def runTask(task: Task): Unit
-
-  def runResult(result: TaskResult): Unit
-
-  def markResult(result: TaskResult): Unit
-
-  def markTask(task: Task): Unit = taskMap += task -> None
-
-  def redoTask(task: Task) = runTask(task)
-
-  def taskCommand(implicit TaskClass: ClassTag[Task], TaskResultClass: ClassTag[TaskResult]): Receive = {
-    case TaskClass(task)         => persist(task) { task =>
-      markTask(task)
-      runTask(task)
-    }
-    case TaskResultClass(result) => persist(result) { result =>
-      runResult(result)
-      markResult(result)
-    }
-  }
-
-  def taskRecover(implicit TaskClass: ClassTag[Task], TaskResultClass: ClassTag[TaskResult]): Receive = {
-    case TaskClass(task)         => markTask(task)
-    case TaskResultClass(result) => markResult(result)
-    case RecoveryCompleted       =>
-      taskMap.collect { case (key, None) => key }.foreach(redoTask)
-  }
-}
-
 object DoSbtCache {
 
-  case class DoCache(scalaVersion: String, lib: String)
+  case class Task(scalaVersion: String, lib: String)
 
-  case class DoCacheResult(doCache: DoCache, result: Option[String])
+  case class TaskResult(task: Task, result: String)
 
-  def cacheCmd(doCache: DoCache) = {
+  def cacheCmd(doCache: Task) = {
     s""" sbt '++${doCache.scalaVersion}' 'set libraryDependencies+=${doCache.lib}' 'update' """
   }
 
@@ -74,51 +37,33 @@ object DoSbtCache {
 
 import scalaindex.DoSbtCache._
 
-class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask) extends PersistentActor {
+class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask)
+  extends PersistentActor
+    with TaskPersistent[DoSbtCache.Task, DoSbtCache.TaskResult] {
 
-  val log         = LoggerFactory getLogger "do-sbt-cache"
-  val sbtLog      = LoggerFactory getLogger "sbt-log"
-  var cacheStatus = Map[DoCache, DoCacheResult]()
+  val log    = LoggerFactory getLogger "do-sbt-cache"
+  val sbtLog = LoggerFactory getLogger "sbt-log"
 
-  override def receiveRecover: Receive = {
-    case x@DoCache(scalaVersion, lib) =>
-      mark(x)
-    case x: DoCacheResult             =>
-      cacheStatus += x.doCache -> x
-    case RecoveryCompleted            =>
-      cacheStatus.values.collect { case DoCacheResult(doCache, None) => self ! doCache }
-  }
+  override def receiveRecover: Receive = taskRecover
 
-  override def receiveCommand: Receive = {
-    case x@DoCache(scalaVersion, lib)                 => persist(x) { x =>
-      mark(x)
-      Try {
-        log.info(s"try to cache $x")
-        exec(cacheCmd(x)).foreach(sbtLog.info(_))
-      } match {
-        case Success(e) => log.info(s"cache success $x")
-        case Failure(e) => log.error(s"cache failure $x ::$e")
-      }
-      self ! DoCacheResult(x, Some(cacheCmd(x)))
-    }
-    case x: DoCacheResult                             =>
-      cacheStatus += x.doCache -> x
-    case x@ScalaIndexCrawler.LibResult(query, result) => persist(x) { x =>
-      log.info(s"receive: $result")
-      val waitDoCache = for {
-        version <- scalaVersionList
-        lib <- result.get.list
-      } yield
-        DoCache(version, lib)
-      waitDoCache foreach (self ! _)
-    }
-
-  }
-
-
-  def mark(x: DoCache) = cacheStatus += x -> DoCacheResult(x, None)
+  override def receiveCommand: Receive = taskCommand
 
   override def persistenceId: String = s"do-sbt-cache-$rootTask"
+
+  override def runTask(task: Task): Unit = {
+    Try {
+      log.info(s"try to cache $task")
+      exec(cacheCmd(task)).foreach(sbtLog.info(_))
+    } match {
+      case Success(e) => log.info(s"cache success $task")
+      case Failure(e) => log.error(s"cache failure $task ::$e")
+    }
+    self ! TaskResult(task, cacheCmd(task))
+  }
+
+  override def runResult(result: TaskResult): Unit = ()
+
+  override def result2task(result: TaskResult): Task = result.task
 }
 
 
