@@ -55,7 +55,7 @@ class DoSbtCache(scalaVersionList: Seq[String], rootTask: RootTask)
   val log              = LoggerFactory getLogger "do-sbt-cache"
   val sbtLog           = LoggerFactory getLogger "sbt-log"
   val executionContext =
-    scala.concurrent.ExecutionContext.fromExecutor(java.util.concurrent.Executors.newFixedThreadPool(1))
+    scala.concurrent.ExecutionContext.fromExecutor(java.util.concurrent.Executors.newFixedThreadPool(10))
 
   override def receiveRecover: Receive = taskRecover
 
