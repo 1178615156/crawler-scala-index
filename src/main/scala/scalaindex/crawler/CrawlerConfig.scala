@@ -15,4 +15,6 @@ object CrawlerConfig {
   val sort         = config.getString("sort".trim)
   val pageStart    = config.getInt("pageStart".trim)
   val pageEnd      = config.getInt("pageEnd".trim)
+  val withSources  = config.getBoolean("withSources")
+  val withJavadoc  = config.getBoolean("withJavadoc")
 }

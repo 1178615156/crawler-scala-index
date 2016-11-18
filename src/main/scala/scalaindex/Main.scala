@@ -20,6 +20,8 @@ import scalaindex.crawler.ScalaIndexCrawler.{DoRun, RootTask}
 import scalaindex.crawler._
 import akka.pattern._
 
+import scalaindex.crawler.CrawlerConfig.{withJavadoc, withSources}
+
 object DoSbtCache {
 
   case class Task(scalaVersion: String, lib: String)
@@ -28,8 +30,11 @@ object DoSbtCache {
 
   def cacheCmd(doCache: Task) = {
     new File("/tmp/sbt-cache").mkdir()
+    require(doCache.lib.split("\n").size == 1)
+    val sv = s"++${doCache.scalaVersion}"
+    val lib = s"(${doCache.lib})${if(withSources) ".withSources()" else ""}${if(withJavadoc) ".withJavadoc()" else ""}"
     "cd /tmp/sbt-cache && " +
-    s""" sbt '++${doCache.scalaVersion}' 'set libraryDependencies+=(${doCache.lib}).withSources().withJavadoc()' 'update' """
+      s""" sbt '$sv' 'set libraryDependencies+=$lib' 'update' """
   }
 
   def exec(cmd: String) = {
