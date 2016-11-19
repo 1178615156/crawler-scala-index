@@ -17,7 +17,8 @@ sh start.sh
 ```
 
 ### config 
-[config 保存在这里](src/main/scala/scalaindex/crawler/CrawlerScalaIndexConfig.scala)
+
+`cd src/main/resources/application.conf` 
 
 ```
  scalaVersion = Seq("2.11.8", "2.12.0") //需要请求缓存的scala version
