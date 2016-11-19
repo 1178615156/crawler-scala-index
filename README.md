@@ -9,12 +9,20 @@
 在也不用担心sha1不一致了
 当然在爬取请求的时候应该使用使用原生 sbt
  
+
 ### 使用
 ```
 git clone https://github.com/1178615156/crawler-scala-index
 cd crawler-scala-index
 sh start.sh 
 ```
+
+---
+
+###
+
+默认一个lib cache之后是不会再次重复cache的无论成功与否
+当然可以先 `sh stop.sh` , `rm -rf journal/` , `sh start.sh` 重新cache
 
 ### config 
 
