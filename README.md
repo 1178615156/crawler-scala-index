@@ -26,5 +26,7 @@ sh start.sh
  sort         = "starts"                //排序方式
  pageStart    = 1                       //启示页
  pageEnd      = 20                      //终止页
+ withSources  = true                    //是否下载 sources
+ withJavadoc  = true                    //是否下载 javadoc
 ```
 
