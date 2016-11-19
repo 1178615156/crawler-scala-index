@@ -41,7 +41,7 @@ trait TaskPersistent[Task, TaskResult] {
 
   def taskCommand(implicit TaskClass: ClassTag[Task], TaskResultClass: ClassTag[TaskResult]): Receive = {
     case TaskClass(task)         => persist(task) { task =>
-      log.debug(s"receive task :$task")
+      log.debug(s"receive task  :$task")
       markTask(task)
       runTask(task)
       doingTask += task
@@ -55,7 +55,7 @@ trait TaskPersistent[Task, TaskResult] {
 
   def taskRecover(implicit TaskClass: ClassTag[Task], TaskResultClass: ClassTag[TaskResult]): Receive = {
     case TaskClass(task)         =>
-      log.debug(s"recover task :$task")
+      log.debug(s"recover task   :$task")
       markTask(task)
     case TaskResultClass(result) =>
       markResult(result)

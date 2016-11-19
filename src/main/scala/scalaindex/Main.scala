@@ -31,9 +31,9 @@ object DoSbtCache {
   def cacheCmd(doCache: Task) = {
     new File("/tmp/sbt-cache").mkdir()
     val sv = s"++${doCache.scalaVersion}"
-//    val lib = s"(${doCache.lib}${if(withSources) ".withSources()" else ""}${if(withJavadoc) ".withJavadoc()" else ""})"
+    val lib = s"(${doCache.lib}${if(withSources) " withSources() " else ""}${if(withJavadoc) " withJavadoc() " else ""})"
     "cd /tmp/sbt-cache && " +
-      s""" sbt '$sv' 'set libraryDependencies+=${doCache.lib}' 'update' """
+      s""" sbt '$sv' 'set libraryDependencies+=$lib' 'update' """
   }
 
   def exec(cmd: String) = {
