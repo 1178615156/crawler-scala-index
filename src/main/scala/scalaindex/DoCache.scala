@@ -35,10 +35,11 @@ class DoCache(
 
   override def runTask(task: Task): Unit = if(!isFinish(task) && !isDoing(task)) {
     val jarTimeout = 120 * 1000
-    val baseTimeout = 1 * 1000
+    val baseTimeout = 2 * 1000
+    implicit val x = taskExecutionContext
 
     def download[T](url: String, t: => HttpResponse[T]) = {
-      val f = Future(t)(taskExecutionContext)
+      val f = RecoverFuture.recoverFuture(Future(t)(taskExecutionContext),3.second,reTryNum)
       f.onComplete {
         case Success(x) => downloadLog.info(s"success [${x.code}] --${url}")
         case Failure(x) => downloadLog.warn(s"failure ${x.getMessage} --$url ")
@@ -47,7 +48,6 @@ class DoCache(
     }
 
     task2request(task, repoxUrl).foreach { rt =>
-      implicit val x = taskExecutionContext
       def future = for {
         pom <- download(rt.pom, Http(rt.pom).timeout(baseTimeout, baseTimeout).asString)
 
@@ -63,7 +63,7 @@ class DoCache(
 
 
       doingFuture flatMap { e =>
-        val f = RecoverFuture.recoverFuture(future,3.second,reTryNum)
+        val f = future
         val taskResult = f.recover { case e =>
           TaskResult(task, result = false)
           log.warn(s"failure $task  -- by ${e.getMessage}")

@@ -50,7 +50,7 @@ def mkLogger(Conf conf) {
 mkLogger(new Conf(name: "do-cache",level: INFO))
 //mkLogger(new Conf(name: "do-sbt-cache",level: DEBUG))
 mkLogger(new Conf(name: "sbt-log",level: DEBUG))
-mkLogger(new Conf(name: "crawler", level: WARN))
+mkLogger(new Conf(name: "crawler", level: INFO))
 mkLogger(new Conf(name:"dowmload"))
 
 mkConsole("CONSOLE", encoderDefault)

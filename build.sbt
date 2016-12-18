@@ -22,3 +22,4 @@ libraryDependencies += "org.scalaj" %% "scalaj-http" % "2.3.0"
 libraryDependencies += "org.scalatra" %% "scalatra" % "2.5.0"
 
 packAutoSettings
+packGenerateWindowsBatFile := false
