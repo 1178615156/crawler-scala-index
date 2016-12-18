@@ -6,6 +6,7 @@ import play.api.libs.ws.WSClient
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
+import scalaindex.ScalaIndexCrawlerEnvironment
 
 /**
   * Created by yujieshui on 2016/11/13.

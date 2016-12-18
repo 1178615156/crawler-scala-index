@@ -14,8 +14,8 @@
 ```
 git clone https://github.com/1178615156/crawler-scala-index
 cd crawler-scala-index
-sh start.sh 
 ```
+然后 `sh start.sh --url=${repox-url}` 例如 `sh start.sh --url=http://127.0.0.1:8078` 
 
 ---
 
@@ -26,15 +26,16 @@ sh start.sh
 
 ### config 
 
-`cd src/main/resources/application.conf` 
+`vi src/main/resources/application.conf` 
 
 ```
- scalaVersion = Seq("2.11.8", "2.12.0") //需要请求缓存的scala version
- q            = "targets:scala_2.11"    //查询条件
- sort         = "starts"                //排序方式
- pageStart    = 1                       //启示页
- pageEnd      = 20                      //终止页
- withSources  = true                    //是否下载 sources
- withJavadoc  = true                    //是否下载 javadoc
+scalaVersion = ["2.10","2.11", "2.12"]      //需要请求缓存的scala version
+q            = ""                           //查询条件
+sort         = "starts"                     //排序方式
+pageStart    = 1                            //启示页
+pageEnd      = 1                            //终止页
+withSources  = true                         //是否下载 sources
+withJavadoc  = true                         //是否下载 javadoc
+reTryNum     = 3                            //重试次数
 ```
 

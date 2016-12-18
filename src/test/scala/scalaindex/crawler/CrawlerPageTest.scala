@@ -10,6 +10,8 @@ import play.api.libs.ws.ahc.AhcWSClient
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
+import scalaindex.{CacheConfig, ScalaIndexCrawlerEnvironment}
+import scalaindex.crawler.ScalaIndexCrawler.RootTask
 
 /**
   * Created by yujieshui on 2016/11/13.
@@ -22,7 +24,11 @@ trait TestResources extends BeforeAndAfterAll {
   lazy          val actorSystem        = ActorSystem("scalaIndexCrawler", config)
   implicit lazy val materializer       = ActorMaterializer()(actorSystem)
   implicit lazy val wsClient: WSClient = AhcWSClient()
-  implicit lazy val environment        = new ScalaIndexCrawlerEnvironment {}
+  implicit lazy val environment        = new ScalaIndexCrawlerEnvironment {
+    override def cacheConfig: CacheConfig = ???
+
+    override def rootTask: RootTask = ???
+  }
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()

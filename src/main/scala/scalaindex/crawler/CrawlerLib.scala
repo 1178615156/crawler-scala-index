@@ -4,6 +4,7 @@ import org.jsoup.Jsoup
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.Future
+import scalaindex.ScalaIndexCrawlerEnvironment
 
 /**
   * Created by yujieshui on 2016/11/13.

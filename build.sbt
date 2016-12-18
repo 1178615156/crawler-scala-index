@@ -17,6 +17,8 @@ libraryDependencies += "com.typesafe.akka" %% "akka-persistence" % "2.4.12"
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.4.12" % Test
 libraryDependencies += "org.iq80.leveldb" % "leveldb" % "0.7"
 libraryDependencies += "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
-libraryDependencies += ("org.codehaus.groovy" % "groovy" % "2.4.6")
+libraryDependencies += "org.codehaus.groovy" % "groovy" % "2.4.6"
+libraryDependencies += "org.scalaj" %% "scalaj-http" % "2.3.0"
+libraryDependencies += "org.scalatra" %% "scalatra" % "2.5.0"
 
 packAutoSettings

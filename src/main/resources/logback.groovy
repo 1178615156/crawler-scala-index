@@ -8,6 +8,7 @@ import ch.qos.logback.classic.net.*;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import static ch.qos.logback.classic.Level.DEBUG
 import static ch.qos.logback.classic.Level.INFO
+import static ch.qos.logback.classic.Level.WARN
 
 encoderDefault = "%d{yyyy-MM-dd HH:mm:ss} %-5level [%logger{50}] %msg%n"
 encoderAkka = "%d{yyyy-MM-dd HH:mm:ss} %-5level [%X{akkaSource}] %msg%n"
@@ -46,9 +47,11 @@ def mkLogger(Conf conf) {
     logger(conf.name, conf.level, [conf.name])
 }
 
-mkLogger(new Conf(name: "do-sbt-cache",level: DEBUG))
+mkLogger(new Conf(name: "do-cache",level: INFO))
+//mkLogger(new Conf(name: "do-sbt-cache",level: DEBUG))
 mkLogger(new Conf(name: "sbt-log",level: DEBUG))
-mkLogger(new Conf(name: "crawler", level: DEBUG))
+mkLogger(new Conf(name: "crawler", level: WARN))
+mkLogger(new Conf(name:"dowmload"))
 
 mkConsole("CONSOLE", encoderDefault)
 mkConsole("AkkaConsole", encoderAkka)

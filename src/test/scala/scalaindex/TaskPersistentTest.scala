@@ -35,7 +35,7 @@ class TestTaskPersistent(override val persistenceId: String)
   override def receiveRecover: Receive = taskRecover
 
   override def receiveCommand: Receive = taskCommand orElse {
-    case GetResult() => sender() ! taskMap.values.toList.collect { case Some(x) => x }
+    case GetResult() => sender() ! maps.values.toList.collect { case Some(x) => x }
   }
 
   override def log: Logger = LoggerFactory getLogger "test-parsistent"

@@ -13,10 +13,10 @@ import scala.reflect.ClassTag
 trait TaskPersistent[Task, TaskResult] {
   self: PersistentActor =>
 
-  def log: Logger
-
-  var taskMap: Map[Task, Option[TaskResult]] = Map()
+  private var taskMap   = Map[Task, Option[TaskResult]]()
   private var doingTask = Set[Task]()
+
+  def log: Logger
 
   def runTask(task: Task): Unit
 
@@ -24,18 +24,36 @@ trait TaskPersistent[Task, TaskResult] {
 
   def result2task(result: TaskResult): Task
 
-  def markResult(result: TaskResult): Unit = taskMap += result2task(result) -> Some(result)
+  def markResult(result: TaskResult): Unit = {
+    if(!isFinish(result2task(result))) {
+      log.info(s"finish task : $result")
+      taskMap += result2task(result) -> Some(result)
+    }
+  }
+  def maps: Map[Task, Option[TaskResult]] = taskMap.toMap
 
-  def markTask(task: Task): Unit = taskMap += task -> None
+  def markTask(task: Task): Unit = {
+    if(!taskMap.contains(task)) {
+      log.info("mark task : " + task)
+      taskMap += task -> None
+    }
+  }
 
-  def isFinish(task: Task) = taskMap.get(task).exists(_.nonEmpty)
+  def markDoing(task: Task): Unit = {
+    if(!doingTask.contains(task)) {
+      log.info("doing task : " + task)
+      doingTask += task
+    }
+  }
 
-  def isDoing(task: Task) = doingTask.contains(task)
+  def isFinish(task: Task): Boolean = taskMap.get(task).exists(_.nonEmpty)
 
-  def redoTask(task: Task) = {
+  def isDoing(task: Task): Boolean = doingTask.contains(task)
+
+  def redoTask(task: Task): Unit = {
     log.info(s"redo task $task")
     runTask(task)
-    doingTask += task
+    markDoing(task)
   }
 
 
@@ -44,7 +62,7 @@ trait TaskPersistent[Task, TaskResult] {
       log.debug(s"receive task  :$task")
       markTask(task)
       runTask(task)
-      doingTask += task
+      markDoing(task)
     }
     case TaskResultClass(result) => persist(result) { result =>
       log.debug(s"receive result:$result")
