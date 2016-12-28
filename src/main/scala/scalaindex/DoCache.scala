@@ -39,7 +39,7 @@ class DoCache(
     implicit val x = taskExecutionContext
 
     def download[T](url: String, t: => HttpResponse[T]) = {
-      val f = RecoverFuture.recoverFuture(Future(t)(taskExecutionContext),3.second,reTryNum)
+      val f = RecoverFuture.recoverFuture(Future(t)(taskExecutionContext), 3.second, reTryNum)
       f.onComplete {
         case Success(x) => downloadLog.info(s"success [${x.code}] --${url}")
         case Failure(x) => downloadLog.warn(s"failure ${x.getMessage} --$url ")
@@ -57,7 +57,8 @@ class DoCache(
         pomShal <- download(rt.pomShal, Http(rt.pomShal).timeout(baseTimeout, baseTimeout).asString)
         jar <- download(rt.jar, Http(rt.jar).timeout(baseTimeout, baseTimeout).asBytes)
         jarShal <- download(rt.jarShal, Http(rt.jarShal).timeout(jarTimeout, jarTimeout).asBytes)
-
+        sources <- rt.sources.map(url => download(url, Http(url).timeout(jarTimeout, jarTimeout).asBytes)).getOrElse(Future.successful(()))
+        javadoc <- rt.javadoc.map(url => download(url, Http(url).timeout(jarTimeout, jarTimeout).asBytes)).getOrElse(Future.successful(()))
       } yield
         TaskResult(task, result = true)
 
@@ -109,7 +110,9 @@ object DoCache {
   }
 
   case class TaskRequest(pom: String, pomShal: String,
-                         jar: String, jarShal: String) {
+                         jar: String, jarShal: String,
+                         sources: Option[String] = None,
+                         javadoc: Option[String] = None) {
     override def toString: String = s"$pom , $jar"
   }
 
@@ -136,7 +139,9 @@ object DoCache {
             s"$baseUrl/$fileName.pom",
             s"$baseUrl/$fileName.pom.sha1",
             s"$baseUrl/$fileName.jar",
-            s"$baseUrl/$fileName.jar.sha1"
+            s"$baseUrl/$fileName.jar.sha1",
+            if(withSources) Some(s"$baseUrl/$fileName-sources.jar") else None,
+            if(withJavadoc) Some(s"$baseUrl/$fileName-javadoc.jar") else None
           )
         )
       case Task(organization, name, version, Some(scalaVersion), withSources, withJavadoc) =>
@@ -147,7 +152,9 @@ object DoCache {
             s"$baseUrl/$fileName.pom",
             s"$baseUrl/$fileName.pom.sha1",
             s"$baseUrl/$fileName.jar",
-            s"$baseUrl/$fileName.jar.sha1"
+            s"$baseUrl/$fileName.jar.sha1",
+            if(withSources) Some(s"$baseUrl/$fileName-sources.jar") else None,
+            if(withJavadoc) Some(s"$baseUrl/$fileName-javadoc.jar") else None
           )
         )
     }
