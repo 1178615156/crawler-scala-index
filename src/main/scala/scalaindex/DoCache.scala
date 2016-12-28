@@ -63,7 +63,7 @@ class DoCache(
         TaskResult(task, result = true)
 
 
-      doingFuture flatMap { e =>
+      doingFuture = doingFuture flatMap { e =>
         val f = future
         val taskResult = f.recover { case e =>
           TaskResult(task, result = false)
