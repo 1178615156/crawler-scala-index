@@ -55,7 +55,7 @@ class DoCache(
         _ = depends foreach (self ! _)
 
         pomShal <- download(rt.pomShal, Http(rt.pomShal).timeout(baseTimeout, baseTimeout).asString)
-        jar <- download(rt.jar, Http(rt.jar).timeout(baseTimeout, baseTimeout).asBytes)
+        jar <- download(rt.jar, Http(rt.jar).timeout(jarTimeout, jarTimeout).asBytes)
         jarShal <- download(rt.jarShal, Http(rt.jarShal).timeout(jarTimeout, jarTimeout).asBytes)
         sources <- rt.sources.map(url => download(url, Http(url).timeout(jarTimeout, jarTimeout).asBytes)).getOrElse(Future.successful(()))
         javadoc <- rt.javadoc.map(url => download(url, Http(url).timeout(jarTimeout, jarTimeout).asBytes)).getOrElse(Future.successful(()))
