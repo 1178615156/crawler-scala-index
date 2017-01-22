@@ -14,7 +14,8 @@ import scalaindex.crawler.ScalaIndexCrawler.RootTask
   */
 
 trait ScalaIndexCrawlerEnvironment {
-  val index_scala_host = "https://index.scala-lang.org"
+//  val index_scala_host = "https://index.scala-lang.org"
+  val index_scala_host = "https://scaladex.scala-lang.org/"
   implicit      val executionContext   =
     scala.concurrent.ExecutionContext.fromExecutor(java.util.concurrent.Executors.newFixedThreadPool(1))
   implicit lazy val actorSystem        = ActorSystem("scalaIndexCrawler")
