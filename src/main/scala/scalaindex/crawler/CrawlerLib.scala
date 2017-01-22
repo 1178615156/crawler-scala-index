@@ -5,6 +5,7 @@ import play.api.libs.ws.WSClient
 
 import scala.concurrent.Future
 import scalaindex.ScalaIndexCrawlerEnvironment
+import scalaj.http.Http
 
 /**
   * Created by yujieshui on 2016/11/13.
@@ -29,6 +30,9 @@ class CrawlerLib(wSClient: WSClient)(implicit environment: ScalaIndexCrawlerEnvi
     wSClient.url(s"$index_scala_host/${query.string}")
       .get()
       .map(_.body)
+//    Future.successful(
+//      Http(s"$index_scala_host/${query.string}").asString.body
+//    )
   }
 
   override def parse(sources: Sources): Future[Parse] = {
